@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QUAF 8.0 - Team Color Spinner</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --muted: #9aa4b2;
+      --size: clamp(100px, 10vw, 160px);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, Arial;
+      background: radial-gradient(circle at center, #111a2b, #0b1220);
+      color: #e6eef8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-direction: column;
+      padding: 32px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .header h3 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      color: var(--muted);
+    }
+
+    .header p {
+      max-width: 700px;
+      margin: 0 auto;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      margin-top: 20px;
+    }
+
+    h1, p { text-align: center; margin: 0 0 10px 0; }
+    p.lead { color: var(--muted); margin-bottom: 25px; }
+
+    .teams {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .team {
+      flex: 1 1 160px;
+      max-width: 200px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .team.active {
+      transform: translateY(-6px);
+      border-color: rgba(255,255,255,0.15);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .logo {
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      background: #0f1724;
+      border: 6px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
+
+    .logo img {
+      width: 140%;
+      height: 140%;
+      object-fit: cover;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-51%, -53%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .team.animating .logo {
+      animation: spin 5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      box-shadow: 0 0 25px rgba(255,255,255,0.4);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.05); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center ;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 28px;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 14px;
+    }
+
+    .team.animating .overlay { opacity: 1; }
+    .name { color: var(--muted); font-size: 15px; }
+    .color-strip { width: 100%; height: 8px; border-radius: 6px; background: transparent; transition: background 0.3s ease; }
+    .controls { text-align: center; margin-top: 25px; }
+    .btn { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--muted); border-radius: 8px; padding: 8px 16px; cursor: pointer; transition: 0.2s; }
+    .btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .status { margin-top: 12px; color: var(--muted); }
+
+  </style>
+</head>
+<body>
+  <!-- QUAF Header Section -->
+  <div class="header">
+    <h1>QUAF 8.0</h1>
+    <h3>The label of something</h3>
+    <p>Welcome to the QUAF 8.0 Team Color Spinner! Tap on a team logo to spin and reveal its unique color. Each team will receive a different color randomly. Enjoy and see which color your team gets!</p>
+  </div>
+
+  <!-- Spinner Section -->
+  <div class="container">
+    <h1>Team Color Spinner</h1>
+    <p class="lead">Tap a team logo to spin and reveal its unique color!</p>
+
+    <div class="teams">
+      <div class="team">
+        <div class="logo"><img src="logo1.png" alt="Team One" /></div>
+        <div class="overlay"><div class="countdown">5</div></div>
+        <div class="name">Team One</div>
+        <div class="color-strip"></div>
+      </div>
+      <div class="team">
+        <div class="logo"><img src="logo1.png" alt="Team Two" /></div>
+        <div class="overlay"><div class="countdown">5</div></div>
+        <div class="name">Team Two</div>
+        <div class="color-strip"></div>
+      </div>
+      <div class="team">
+        <div class="logo"><img src="logo1.png" alt="Team Three" /></div>
+        <div class="overlay"><div class="countdown">5</div></div>
+        <div class="name">Team Three</div>
+        <div class="color-strip"></div>
+      </div>
+      <div class="team">
+        <div class="logo"><img src="logo1.png" alt="Team Four" /></div>
+        <div class="overlay"><div class="countdown">5</div></div>
+        <div class="name">Team Four</div>
+        <div class="color-strip"></div>
+      </div>
+      <div class="team">
+        <div class="logo"><img src="logo1.png" alt="Team Five" /></div>
+        <div class="overlay"><div class="countdown">5</div></div>
+        <div class="name">Team Five</div>
+        <div class="color-strip"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="resetBtn">🔄 Reset</button>
+      <div class="status" id="statusText">Tap a team logo to start</div>
+    </div>
+  </div>
+
+  <script>
+    const teams = document.querySelectorAll(".team");
+    const statusText = document.getElementById("statusText");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const colorPool = [
+      { name: "Violet", code: "#8a2be2" },
+      { name: "Blue", code: "#007bff" },
+      { name: "White", code: "#ffffff" },
+      { name: "Red", code: "#ff0000" },
+      { name: "Green", code: "#28a745" }
+    ];
+
+    let availableColors = [...colorPool];
+    
+    let currentAnimating = false;
+    let lockedTeams = 0;
+
+    teams.forEach(team => {
+      team.addEventListener("click", () => {
+        if (team.classList.contains("locked") || currentAnimating) return;
+        if (availableColors.length === 0) {
+          alert("All colors already assigned!");
+          return;
+        }
+        spinTeam(team);
+      });
+    });
+
+    function spinTeam(team) {
+      currentAnimating = true;
+      team.classList.add("animating", "active");
+      const overlay = team.querySelector(".overlay");
+      const countdown = overlay.querySelector(".countdown");
+      let count = 5;
+      countdown.textContent = count;
+
+      const timer = setInterval(() => {
+        count--;
+        countdown.textContent = count;
+        if (count <= 0) clearInterval(timer);
+      }, 1000);
+
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * availableColors.length);
+        const selected = availableColors.splice(randomIndex, 1)[0];
+
+        const logo = team.querySelector(".logo");
+        const img = logo.querySelector("img");
+        if (img) img.remove();
+
+        logo.style.backgroundColor = selected.code;
+        logo.style.boxShadow = `0 0 25px ${selected.code}`;
+        team.querySelector(".color-strip").style.backgroundColor = selected.code;
+
+        team.classList.remove("animating");
+        team.classList.add("locked");
+        overlay.style.opacity = 0;
+        currentAnimating = false;
+        lockedTeams++;
+
+        if (lockedTeams >= teams.length) {
+          statusText.textContent = "🎉 All teams got unique colors!";
+        } else {
+          statusText.textContent = `✅ ${selected.name} assigned! ${5 - lockedTeams} teams left.`;
+        }
+      }, 5000);
+    }
+
+    resetBtn.addEventListener("click", () => {
+      teams.forEach(team => {
+        team.classList.remove("locked", "active");
+        const logo = team.querySelector(".logo");
+        logo.style.backgroundColor = "#0f1724";
+        logo.style.boxShadow = "0 0 10px rgba(255,255,255,0.1)";
+        team.querySelector(".color-strip").style.backgroundColor = "transparent";
+        team.querySelector(".overlay").style.opacity = 0;
+
+        if (!logo.querySelector("img")) {
+          const img = document.createElement("img");
+          img.src = "logo1.png";
+          img.alt = "Team Logo";
+          logo.appendChild(img);
+        }
+      });
+      lockedTeams = 0;
+      currentAnimating = false;
+      availableColors = [...colorPool];
+      statusText.textContent = "Tap a team logo to start";
+    });
+  </script>
+</body>
+</html>
