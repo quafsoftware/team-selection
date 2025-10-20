@@ -1,302 +1,686 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QUAF 8.0 - Team Color Spinner</title>
-  <style>
-    :root {
-      --bg: #0b1220;
-      --muted: #9aa4b2;
-      --size: clamp(100px, 10vw, 160px);
-    }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bungee+Spice&display=swap"
+      rel="stylesheet"
+    />
+    <title>QUAF 8.0 - Team Color Spinner (Responsive)</title>
+    <style>
+:root{
+  --muted:#9aa4b2;
+  /* safer logo size clamp so it never becomes too small/huge on extremes */
+  --size: clamp(100px, 12vw, 260px);
+}
 
-    * { box-sizing: border-box; }
+* { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, Arial;
-      background: radial-gradient(circle at center, #111a2b, #0b1220);
-      color: #e6eef8;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      flex-direction: column;
-      padding: 32px;
-    }
+html,body { height: 100%; }
 
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: radial-gradient(circle at center, #0c1220, #060910);
+  color: #e6eef8;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 40px;
+  overflow: auto;
+}
 
-    .header h1 {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      color: #fff;
-    }
+.header {
+  margin-top: 40px;
+  text-align: center;
+}
+.header img { width: min(520px, 22vw); margin-bottom: 20px; }
 
-    .header h3 {
-      font-size: 1.5rem;
-      margin-bottom: 8px;
-      color: var(--muted);
-    }
+.container {
+  width: 100%;
+  max-width: 2200px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 24px;
+  padding: 48px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 10px 60px rgba(0,0,0,0.8);
+  margin-top: 30px;
+  transition: opacity 0.6s ease;
+}
 
-    .header p {
-      max-width: 700px;
-      margin: 0 auto;
-      color: var(--muted);
-      line-height: 1.5;
-    }
+.teams {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: clamp(24px, 3vw, 64px);
+  width: 100%;
+  margin: 0 auto;
+  max-width: 3800px; /* allow up to 4K screens comfortably */
+  overflow: visible;
+}
 
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 16px;
-      padding: 24px;
-      border: 1px solid rgba(255,255,255,0.05);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-      margin-top: 20px;
-    }
+.team {
+  flex: 1 1 220px;
+  max-width: 280px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 20px;
+  padding: clamp(16px, 2vw, 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  min-width: 180px;
+}
 
-    h1, p { text-align: center; margin: 0 0 10px 0; }
-    p.lead { color: var(--muted); margin-bottom: 25px; }
+.team.active {
+  transform: translateY(-8px);
+  border-color: rgba(255,255,255,.15);
+  box-shadow: 0 12px 40px rgba(0,0,0,.6);
+}
 
-    .teams {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
+.logo { width: var(--size); height: var(--size); border-radius: 50%; background: #0f1724; border: 6px solid rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; transition: box-shadow .3s ease, transform .3s ease; }
+.logo img { width:140%; height:140%; object-fit:cover; position:absolute; top:50%; left:50%; transform: translate(-51%,-53%); border-radius:50%; pointer-events:none; }
+.team.animating .logo { animation: spin 3s cubic-bezier(.45,.05,.55,.95); box-shadow: 0 0 40px rgba(255,255,255,.6); }
+@keyframes spin { 0%{transform:rotate(0deg) scale(1)} 50%{transform:rotate(180deg) scale(1.05)} 100%{transform:rotate(360deg) scale(1)} }
 
-    .team {
-      flex: 1 1 160px;
-      max-width: 200px;
-      background: rgba(255,255,255,0.02);
-      border-radius: 14px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.3s ease;
-      position: relative;
-    }
+.overlay { position:absolute; inset:0; display:grid; place-items:center; background: rgba(0,0,0,.6); color:#fff; font-size:40px; font-weight:700; opacity:0; transition:opacity .3s ease; border-radius:20px; }
+.team.animating .overlay { opacity: 1; }
 
-    .team.active {
-      transform: translateY(-6px);
-      border-color: rgba(255,255,255,0.15);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
+.name { color:var(--muted); font-size:22px; }
+.color-strip { width:100%; height:12px; border-radius:8px; background:transparent; transition: background .3s ease; }
 
-    .logo {
-      width: var(--size);
-      height: var(--size);
-      border-radius: 50%;
-      background: #0f1724;
-      border: 6px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      position: relative;
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
-      box-shadow: 0 0 10px rgba(255,255,255,0.1);
-    }
+/* Big full-screen overlay (victory/match screen) */
+.big-screen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: radial-gradient(circle at center, rgba(0,0,0,0.18), rgba(0,0,0,0.92));
+  backdrop-filter: blur(12px) saturate(140%);
+  animation: overlayFadeIn 360ms ease forwards;
+  cursor: pointer; /* allow click to dismiss */
+}
 
-    .logo img {
-      width: 140%;
-      height: 140%;
-      object-fit: cover;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-51%, -53%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
+/* optional decorative blended spotlight */
+.overlay-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
 
-    .team.animating .logo {
-      animation: spin 5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-      box-shadow: 0 0 25px rgba(255,255,255,0.4);
-    }
+/* hero content */
+.big-screen-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  animation: heroPop 900ms cubic-bezier(.2,.9,.3,1) forwards;
+  text-align: center;
+  max-width: 94vw; /* keep hero inside viewport */
+}
 
-    @keyframes spin {
-      0% { transform: rotate(0deg) scale(1); }
-      50% { transform: rotate(180deg) scale(1.05); }
-      100% { transform: rotate(360deg) scale(1); }
-    }
+.logo-large {
+  width: min(36vmin, 700px);
+  height: min(36vmin, 700px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 12px solid rgba(255,255,255,0.08);
+  box-shadow: 0 60px 150px rgba(0,0,0,0.8), 0 0 200px currentColor;
+  overflow: hidden;
+  transform: scale(0.95);
+  animation: logoPop 900ms cubic-bezier(.2,.9,.3,1) forwards;
+}
 
-    .overlay {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center ;
-      background: rgba(0,0,0,0.5);
-      color: #fff;
-      font-size: 28px;
-      font-weight: bold;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      border-radius: 14px;
-    }
+/* initial letter inside big circle */
+.logo-large .initial {
+  color: white;
+  font-weight: 900;
+  font-size: clamp(3rem, 9vw, 8.5rem);
+  text-shadow: 0 12px 34px rgba(0,0,0,0.75);
+  user-select: none;
+  transform: translateY(6px);
+  animation: initialBounce 1100ms cubic-bezier(.2,.9,.3,1) forwards;
+}
 
-    .team.animating .overlay { opacity: 1; }
-    .name { color: var(--muted); font-size: 15px; }
-    .color-strip { width: 100%; height: 8px; border-radius: 6px; background: transparent; transition: background 0.3s ease; }
-    .controls { text-align: center; margin-top: 25px; }
-    .btn { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--muted); border-radius: 8px; padding: 8px 16px; cursor: pointer; transition: 0.2s; }
-    .btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    .status { margin-top: 12px; color: var(--muted); }
+/* big name wrapper that will be scaled by JS if it would overflow */
+.big-name-wrap {
+  display: inline-block;
+  max-width: 92vw; /* keep text constrained */
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  transform-origin: center center;
+}
 
-  </style>
-</head>
-<body>
-  <!-- QUAF Header Section -->
-  <div class="header">
-    <h1>QUAF 8.0</h1>
-    <h3>The label of something</h3>
-    <p>Welcome to the QUAF 8.0 Team Color Spinner! Tap on a team logo to spin and reveal its unique color. Each team will receive a different color randomly. Enjoy and see which color your team gets!</p>
-  </div>
+/* big name */
+.big-name {
+  font-family: "Bungee Spice", sans-serif;
+  font-size: clamp(3.4rem, 9.5vw, 14rem); /* reduced top size to avoid overflow */
+  font-weight: 900;
+  color: currentColor;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  line-height: 0.88;
+  text-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 10px 36px rgba(0,0,0,0.6);
+  display: inline-block;
+  will-change: transform;
+  /* allow text scaling without breaking layout */
+}
 
-  <!-- Spinner Section -->
-  <div class="container">
-    <h1>Team Color Spinner</h1>
-    <p class="lead">Tap a team logo to spin and reveal its unique color!</p>
+/* animated flashes and pop */
+@keyframes overlayFadeIn { from{opacity:0} to{opacity:1} }
+@keyframes heroPop {
+  0% { transform: scale(.78) translateY(12px); opacity:0; }
+  60% { transform: scale(1.08) translateY(-8px); opacity:1; }
+  100% { transform: scale(1) translateY(0); opacity:1; }
+}
+@keyframes logoPop {
+  0% { transform: scale(.6) rotate(-6deg); opacity:0; filter: blur(6px); }
+  60% { transform: scale(1.12) rotate(4deg); opacity:1; filter: blur(0); }
+  100% { transform: scale(1) rotate(0); opacity:1; filter: blur(0); }
+}
+@keyframes initialBounce {
+  0% { transform: translateY(20px) scale(.7); opacity:0; }
+  60% { transform: translateY(-6px) scale(1.05); opacity:1; }
+  100% { transform: translateY(0) scale(1); opacity:1; }
+}
+@keyframes explodeText {
+  0% { transform: scale(.25) rotate(-18deg); opacity:0; filter: blur(8px); }
+  60% { transform: scale(1.24) rotate(6deg); opacity:1; filter: blur(0); }
+  100% { transform: scale(1) rotate(0); opacity:1; filter: blur(0); }
+}
 
-    <div class="teams">
-      <div class="team">
-        <div class="logo"><img src="logo1.png" alt="Team One" /></div>
-        <div class="overlay"><div class="countdown">5</div></div>
-        <div class="name">Team One</div>
-        <div class="color-strip"></div>
-      </div>
-      <div class="team">
-        <div class="logo"><img src="logo1.png" alt="Team Two" /></div>
-        <div class="overlay"><div class="countdown">5</div></div>
-        <div class="name">Team Two</div>
-        <div class="color-strip"></div>
-      </div>
-      <div class="team">
-        <div class="logo"><img src="logo1.png" alt="Team Three" /></div>
-        <div class="overlay"><div class="countdown">5</div></div>
-        <div class="name">Team Three</div>
-        <div class="color-strip"></div>
-      </div>
-      <div class="team">
-        <div class="logo"><img src="logo1.png" alt="Team Four" /></div>
-        <div class="overlay"><div class="countdown">5</div></div>
-        <div class="name">Team Four</div>
-        <div class="color-strip"></div>
-      </div>
-      <div class="team">
-        <div class="logo"><img src="logo1.png" alt="Team Five" /></div>
-        <div class="overlay"><div class="countdown">5</div></div>
-        <div class="name">Team Five</div>
-        <div class="color-strip"></div>
+/* small subline */
+.subline { color: rgba(255,255,255,.95); font-size: clamp(1rem,2vw,1.6rem); }
+
+/* extra UI state when overlay is active */
+.dimmed { filter: blur(3px) brightness(0.6); pointer-events: none; user-select: none; }
+
+/* responsive tweaks for narrow screens */
+@media (min-width: 2200px) {
+  .teams {
+    flex-wrap: nowrap;   /* one row only */
+    justify-content: center;
+    gap: 80px;
+  }
+  .team {
+    flex: 0 0 260px;
+  }
+}
+
+/* Tablet tweaks */
+@media (max-width: 1200px) {
+  .teams {
+    gap: 40px;
+  }
+  .team {
+    flex: 1 1 200px;
+  }
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .teams {
+    gap: 24px;
+  }
+  .team {
+    flex: 1 1 45%;
+    max-width: 48%;
+  }
+}
+
+/* Small mobile (vertical phones) */
+@media (max-width: 480px) {
+  .teams {
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+  .team {
+    width: 90%;
+    max-width: 320px;
+  }
+}
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="QUAFOKTOw.png" alt="QUAF 8.0 Logo" />
+    </div>
+
+    <div class="container" id="teamContainer">
+      <div class="teams">
+        <div class="team">
+          <div class="logo"><img src="logo1.png" alt="logo team one" /></div>
+          <div class="overlay"><div class="countdown">3</div></div>
+          <div class="name">Team One</div>
+          <div class="color-strip"></div>
+        </div>
+        <div class="team">
+          <div class="logo"><img src="logo1.png" alt="logo team two" /></div>
+          <div class="overlay"><div class="countdown">3</div></div>
+          <div class="name">Team Two</div>
+          <div class="color-strip"></div>
+        </div>
+        <div class="team">
+          <div class="logo"><img src="logo1.png" alt="logo team three" /></div>
+          <div class="overlay"><div class="countdown">3</div></div>
+          <div class="name">Team Three</div>
+          <div class="color-strip"></div>
+        </div>
+        <div class="team">
+          <div class="logo"><img src="logo1.png" alt="logo team four" /></div>
+          <div class="overlay"><div class="countdown">3</div></div>
+          <div class="name">Team Four</div>
+          <div class="color-strip"></div>
+        </div>
+        <div class="team">
+          <div class="logo"><img src="logo1.png" alt="logo team five" /></div>
+          <div class="overlay"><div class="countdown">3</div></div>
+          <div class="name">Team Five</div>
+          <div class="color-strip"></div>
+        </div>
       </div>
     </div>
 
-    <div class="controls">
-      <button class="btn" id="resetBtn">🔄 Reset</button>
-      <div class="status" id="statusText">Tap a team logo to start</div>
-    </div>
-  </div>
+    <script>
+/* same team/assignment logic, with added fitting for big-name to avoid overflow */
+const teams = document.querySelectorAll(".team");
+const colorPool = [
+  { name: "Violet", code: "#8a2be2", teamName: "Eunarion" },
+  { name: "Blue", code: "#007bff", teamName: "Nekrion" },
+  { name: "Yellow", code: "#ffd400", teamName: "Logarion" },
+  { name: "Red", code: "#ff3b30", teamName: "Sopharion" },
+  { name: "Green", code: "#28a745", teamName: "Arethion" },
+];
 
-  <script>
-    const teams = document.querySelectorAll(".team");
-    const statusText = document.getElementById("statusText");
-    const resetBtn = document.getElementById("resetBtn");
+let availableColors = [...colorPool];
+let currentAnimating = false;
 
-    const colorPool = [
-      { name: "Violet", code: "#8a2be2" },
-      { name: "Blue", code: "#007bff" },
-      { name: "White", code: "#ffffff" },
-      { name: "Red", code: "#ff0000" },
-      { name: "Green", code: "#28a745" }
-    ];
+teams.forEach(team => {
+  team.addEventListener("click", () => {
+    if (team.classList.contains("locked") || currentAnimating) return;
+    if (availableColors.length === 0) { alert("All colors assigned!"); return; }
+    spinTeam(team);
+  });
+});
 
-    let availableColors = [...colorPool];
-    
-    let currentAnimating = false;
-    let lockedTeams = 0;
+function spinTeam(team) {
+  currentAnimating = true;
+  team.classList.add("animating", "active");
+  const overlay = team.querySelector(".overlay");
+  const countdown = overlay.querySelector(".countdown");
+  let count = 3;
+  countdown.textContent = count;
 
-    teams.forEach(team => {
-      team.addEventListener("click", () => {
-        if (team.classList.contains("locked") || currentAnimating) return;
-        if (availableColors.length === 0) {
-          alert("All colors already assigned!");
-          return;
-        }
-        spinTeam(team);
-      });
-    });
+  const logoEl = team.querySelector(".logo");
 
-    function spinTeam(team) {
-      currentAnimating = true;
-      team.classList.add("animating", "active");
-      const overlay = team.querySelector(".overlay");
-      const countdown = overlay.querySelector(".countdown");
-      let count = 5;
-      countdown.textContent = count;
+  const timer = setInterval(() => {
+    count--;
+    countdown.textContent = count;
+    if (count <= 0) clearInterval(timer);
+  }, 1000);
 
-      const timer = setInterval(() => {
-        count--;
-        countdown.textContent = count;
-        if (count <= 0) clearInterval(timer);
-      }, 1000);
+  setTimeout(() => {
+    const idx = Math.floor(Math.random() * availableColors.length);
+    const selected = availableColors.splice(idx, 1)[0];
 
-      setTimeout(() => {
-        const randomIndex = Math.floor(Math.random() * availableColors.length);
-        const selected = availableColors.splice(randomIndex, 1)[0];
+    const img = logoEl.querySelector("img");
+    if (img) img.remove();
 
-        const logo = team.querySelector(".logo");
-        const img = logo.querySelector("img");
-        if (img) img.remove();
+    logoEl.style.backgroundColor = selected.code;
+    logoEl.style.boxShadow = `0 0 40px ${selected.code}`;
+    team.querySelector(".color-strip").style.backgroundColor = selected.code;
 
-        logo.style.backgroundColor = selected.code;
-        logo.style.boxShadow = `0 0 25px ${selected.code}`;
-        team.querySelector(".color-strip").style.backgroundColor = selected.code;
+    // show the victory / match screen
+    showSelectedScreen(selected);
 
-        team.classList.remove("animating");
-        team.classList.add("locked");
-        overlay.style.opacity = 0;
-        currentAnimating = false;
-        lockedTeams++;
+    // finalize team card after overlay
+    setTimeout(() => {
+      const label = document.createElement("div");
+      label.textContent = selected.teamName;
+      label.style.color = selected.code;
+      label.style.fontWeight = "700";
+      label.style.marginTop = "8px";
+      label.style.fontSize = "16px";
+      team.appendChild(label);
 
-        if (lockedTeams >= teams.length) {
-          statusText.textContent = "🎉 All teams got unique colors!";
-        } else {
-          statusText.textContent = `✅ ${selected.name} assigned! ${5 - lockedTeams} teams left.`;
-        }
-      }, 5000);
-    }
-
-    resetBtn.addEventListener("click", () => {
-      teams.forEach(team => {
-        team.classList.remove("locked", "active");
-        const logo = team.querySelector(".logo");
-        logo.style.backgroundColor = "#0f1724";
-        logo.style.boxShadow = "0 0 10px rgba(255,255,255,0.1)";
-        team.querySelector(".color-strip").style.backgroundColor = "transparent";
-        team.querySelector(".overlay").style.opacity = 0;
-
-        if (!logo.querySelector("img")) {
-          const img = document.createElement("img");
-          img.src = "logo1.png";
-          img.alt = "Team Logo";
-          logo.appendChild(img);
-        }
-      });
-      lockedTeams = 0;
+      team.classList.remove("animating", "active");
+      team.classList.add("locked");
       currentAnimating = false;
-      availableColors = [...colorPool];
-      statusText.textContent = "Tap a team logo to start";
+    }, 4800);
+  }, 4000);
+}
+
+/* ===== Victory overlay and responsive fitting ===== */
+function showSelectedScreen(selected) {
+  const container = document.getElementById("teamContainer");
+  container.classList.add("dimmed");
+  const prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+
+  const overlay = document.createElement("div");
+  overlay.className = "big-screen-overlay";
+  overlay.style.color = selected.code;
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-label", `${selected.teamName}`);
+  overlay.tabIndex = -1;
+
+  const spotlight = document.createElement("div");
+  spotlight.className = "overlay-spotlight";
+  overlay.appendChild(spotlight);
+
+  const hero = document.createElement("div");
+  hero.className = "big-screen-hero";
+
+  const logoLarge = document.createElement("div");
+  logoLarge.className = "logo-large";
+  logoLarge.style.background = selected.code;
+
+  const initial = document.createElement("div");
+  initial.className = "initial";
+  const firstChar = (selected.teamName || selected.name || "").trim().charAt(0).toUpperCase()
+  initial.textContent = firstChar;
+  logoLarge.appendChild(initial);
+
+  // big name wrapper so we can scale it if it overflows
+  const bigNameWrap = document.createElement("div");
+  bigNameWrap.className = "big-name-wrap";
+
+  const bigName = document.createElement("div");
+  bigName.className = "big-name";
+  bigName.textContent = selected.teamName;
+
+  bigNameWrap.appendChild(bigName);
+
+  const subline = document.createElement("div");
+  subline.className = "subline";
+  subline.textContent = "Team color assigned";
+
+  hero.appendChild(logoLarge);
+  hero.appendChild(bigNameWrap);
+  hero.appendChild(subline);
+
+  // canvas for effects (kept on top)
+  const fxCanvas = document.createElement("canvas");
+  fxCanvas.style.position = "absolute";
+  fxCanvas.style.inset = "0";
+  fxCanvas.style.width = "100%";
+  fxCanvas.style.height = "100%";
+  fxCanvas.style.pointerEvents = "none";
+  overlay.appendChild(fxCanvas);
+
+  overlay.appendChild(hero);
+  document.body.appendChild(overlay);
+
+  // spotlight style
+  spotlight.style.background = `radial-gradient(circle at 50% 35%, ${hexToRgba(selected.code,0.14)} 0%, rgba(255,255,255,0.02) 10%, rgba(0,0,0,0.72) 60%)`;
+  spotlight.style.transition = "opacity 600ms ease";
+  spotlight.style.opacity = "0";
+  requestAnimationFrame(()=> spotlight.style.opacity = "1");
+
+  // run confetti/particles and audio
+  const { cancel } = runConfettiAndParticles(fxCanvas, selected.code);
+  const audioCtl = playVictoryTone(selected.code);
+
+  // responsive fit for big name: scale down if measured width exceeds allowed width
+  function fitBigName() {
+    // reset any previous scale
+    bigNameWrap.style.transform = "";
+    // measure
+    const wrapRect = bigNameWrap.getBoundingClientRect();
+    const maxWidth = Math.max(160, window.innerWidth * 0.92);
+    if (wrapRect.width > maxWidth) {
+      const scale = maxWidth / wrapRect.width;
+      // apply a smooth scaling transform while keeping animations: we use scale only
+      bigNameWrap.style.transform = `scale(${scale})`;
+    }
+  }
+  // run immediately and on resize (throttled)
+  fitBigName();
+  let resizeTimer = null;
+  function onResize() {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { fitBigName(); }, 80);
+  }
+  window.addEventListener("resize", onResize);
+
+  // cleanup logic
+  let closed = false;
+  function finishAndCleanup() {
+    if (closed) return;
+    closed = true;
+    overlay.style.transition = "opacity 320ms ease, transform 320ms ease";
+    overlay.style.opacity = "0";
+    overlay.style.transform = "scale(.98)";
+    if (audioCtl && audioCtl.stop) audioCtl.stop();
+    cancel();
+    window.removeEventListener("resize", onResize);
+    setTimeout(() => {
+      overlay.remove();
+      container.classList.remove("dimmed");
+      document.body.style.overflow = prevOverflow || "";
+    }, 360);
+  }
+
+  const removeTimer = setTimeout(finishAndCleanup, 3800);
+
+  // dismiss by click or ESC
+  overlay.addEventListener("click", () => { clearTimeout(removeTimer); finishAndCleanup(); });
+  function escHandler(e) { if (e.key === "Escape") { clearTimeout(removeTimer); finishAndCleanup(); } }
+  window.addEventListener("keydown", escHandler);
+
+  // ensure listeners are removed when overlay cleared
+  overlay.addEventListener("remove", () => window.removeEventListener("keydown", escHandler));
+}
+
+/* lightweight confetti + particles and audio utilities are identical to previous version */
+function runConfettiAndParticles(canvas, color) {
+  const ctx = canvas.getContext("2d");
+  let raf = null;
+  let running = true;
+
+  function fit() {
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = Math.max(300, Math.floor(canvas.clientWidth * ratio));
+    canvas.height = Math.max(300, Math.floor(canvas.clientHeight * ratio));
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+  fit();
+  window.addEventListener("resize", fit);
+
+  const particles = [];
+  const confetti = [];
+  const palette = [color, "#ffffff", "#ffd400", "#00e5ff", "#ff6b6b"];
+
+  function rand(min, max){ return Math.random()*(max-min)+min; }
+
+  function createBurst(x, y, count) {
+    for (let i=0;i<count;i++){
+      const angle = rand(0, Math.PI*2);
+      const speed = rand(120, 520);
+      particles.push({
+        x, y,
+        vx: Math.cos(angle)*speed,
+        vy: Math.sin(angle)*speed,
+        size: rand(3,7),
+        life: rand(600, 1400),
+        age: 0,
+        color: palette[(i+2)%palette.length],
+        type: "spark"
+      });
+    }
+  }
+
+  function createConfetti(n) {
+    for (let i=0;i<n;i++){
+      const startX = rand(0, canvas.width / (window.devicePixelRatio||1));
+      const startY = rand(-50, 30);
+      confetti.push({
+        x: startX,
+        y: startY,
+        vx: rand(-80, 80),
+        vy: rand(40, 180),
+        w: rand(8, 18),
+        h: rand(6, 10),
+        rotate: rand(0, Math.PI*2),
+        vr: rand(-6,6),
+        color: palette[i % palette.length],
+        life: rand(2200, 4200),
+        age: 0,
+        flip: Math.random() > 0.5 ? 1 : -1
+      });
+    }
+  }
+
+  createBurst(window.innerWidth * 0.5, window.innerHeight * 0.45, 32);
+  createConfetti(28);
+
+  let last = performance.now();
+  function step(now){
+    if (!running) return;
+    const dt = Math.min(50, now - last);
+    last = now;
+    update(dt);
+    render();
+    raf = requestAnimationFrame(step);
+  }
+  raf = requestAnimationFrame(step);
+
+  function update(dtMs) {
+    const dt = dtMs / 1000;
+    for (let i = particles.length - 1; i >= 0; --i) {
+      const p = particles[i];
+      p.vy += 600 * dt;
+      p.vx *= Math.pow(0.99, dtMs/16);
+      p.vy *= Math.pow(0.99, dtMs/16);
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.age += dtMs;
+      if (p.age > p.life || p.y > canvas.height / (window.devicePixelRatio||1) + 60) {
+        particles.splice(i,1);
+      }
+    }
+    for (let i = confetti.length - 1; i >= 0; --i) {
+      const c = confetti[i];
+      c.vy += 700 * dt;
+      c.vx += Math.sin((c.age / 700) * Math.PI * 2) * 8 * dt;
+      c.vx *= 0.999;
+      c.vy *= 0.999;
+      c.x += c.vx * dt;
+      c.y += c.vy * dt;
+      c.rotate += c.vr * dt;
+      c.age += dtMs;
+      if (c.age > c.life || c.y > canvas.height / (window.devicePixelRatio||1) + 60) {
+        confetti.splice(i,1);
+      }
+    }
+    if (Math.random() < 0.08) createConfetti(1);
+  }
+
+  function render() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    const gradient = ctx.createRadialGradient(canvas.width*0.5, canvas.height*0.4, 10, canvas.width*0.5, canvas.height*0.4, Math.max(canvas.width, canvas.height)*0.8);
+    gradient.addColorStop(0, hexToRgba(color, 0.24));
+    gradient.addColorStop(0.6, hexToRgba('#000', 0));
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.restore();
+
+    for (const p of particles){
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = 1 - (p.age / p.life);
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    for (const c of confetti){
+      const cx = c.x;
+      const cy = c.y;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(c.rotate);
+      const flipFactor = Math.abs(Math.cos(c.rotate*2));
+      ctx.fillStyle = c.color;
+      ctx.globalAlpha = 0.95 - (c.age / c.life) * 0.5;
+      ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h);
+      ctx.fillStyle = hexToRgba('#000', 0.12 * (1 - flipFactor));
+      ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function cancel() {
+    running = false;
+    if (raf) cancelAnimationFrame(raf);
+    window.removeEventListener("resize", fit);
+  }
+
+  return { cancel };
+}
+
+function playVictoryTone(hexColor) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const freqs = [440, 660, 880];
+    const gain = ctx.createGain();
+    gain.gain.value = 0.0001;
+    gain.connect(ctx.destination);
+    gain.gain.linearRampToValueAtTime(0.26, now + 0.01);
+
+    const sources = freqs.map((f,i) => {
+      const osc = ctx.createOscillator();
+      const oGain = ctx.createGain();
+      osc.type = i === 1 ? "sawtooth" : "triangle";
+      osc.frequency.value = f;
+      oGain.gain.value = 0.06 * (1 - i*0.02);
+      osc.connect(oGain);
+      oGain.connect(gain);
+      osc.start(now + i*0.02);
+      osc.stop(now + 0.9 + i*0.02);
+      return { osc, oGain };
     });
-  </script>
-</body>
+
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+    function stop() { try { ctx.close && ctx.close(); } catch(e){} }
+    setTimeout(stop, 1400);
+    return { stop };
+  } catch (err) {
+    return null;
+  }
+}
+
+function hexToRgba(hex, alpha = 1) {
+  const h = hex.replace("#","");
+  const full = h.length === 3 ? h.split("").map(c=>c+c).join("") : h;
+  const bigint = parseInt(full, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+    </script>
+  </body>
 </html>
