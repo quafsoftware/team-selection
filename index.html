@@ -300,7 +300,138 @@ body {
     </div>
 
     <script>
-/* same team/assignment logic, with added fitting for big-name to avoid overflow */
+/* ====== AUDIO HELPERS ======
+   Added:
+   - playCountdownTick() which produces a short tick for each second of the countdown.
+   - It's wired so a tick plays immediately when the countdown starts (3)
+     and on each decrement (2, 1).
+   - Uses the shared AudioContext (getAudioCtx) already present in the page.
+*/
+
+function getAudioCtx() {
+  if (!window._qaAudioCtx) {
+    window._qaAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // ensure audio context is resumed on first user gesture (favored by browsers)
+    const resumeOnGesture = () => {
+      if (window._qaAudioCtx && window._qaAudioCtx.state === "suspended") {
+        try { window._qaAudioCtx.resume(); } catch (e) { /* ignore */ }
+      }
+      document.removeEventListener("pointerdown", resumeOnGesture);
+      document.removeEventListener("keydown", resumeOnGesture);
+    };
+    document.addEventListener("pointerdown", resumeOnGesture, { once: true });
+    document.addEventListener("keydown", resumeOnGesture, { once: true });
+  }
+  return window._qaAudioCtx;
+}
+
+// short click / tick sound for button press (kept as-is)
+function playClickSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = 1200 + Math.random() * 180; // slight variation
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.003);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.14);
+  } catch (e) {
+    console.warn("click sound failed", e);
+  }
+}
+
+// very short, crisp tick used for countdown steps
+function playCountdownTick() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    // Use a short triangle/sine blend for a crisp but soft tick
+    osc.type = "triangle";
+    osc.frequency.value = 1400 + Math.random() * 120; // small variance
+
+    gain.gain.setValueAtTime(0.0001, now);
+    // very quick attack to ~0.12 then rapid decay for tick
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.10);
+
+    // small high-pass to make it "clicky" and remove low rumble
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 800;
+
+    osc.connect(gain);
+    gain.connect(hp);
+    hp.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.11);
+  } catch (e) {
+    console.warn("countdown tick failed", e);
+  }
+}
+
+// burst / punch sound (noise + low chord) for the overlay (kept as-is)
+function playBurstSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+
+    // 1) noise burst (short white noise filtered)
+    const duration = 1.0; // seconds
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    }
+    const noiseSrc = ctx.createBufferSource();
+    noiseSrc.buffer = buffer;
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 1400;
+    bp.Q.value = 0.9;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.001, now);
+    noiseGain.gain.linearRampToValueAtTime(0.9, now + 0.02);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+
+    noiseSrc.connect(bp);
+    bp.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noiseSrc.start(now);
+    noiseSrc.stop(now + duration);
+
+    // 2) low "punch" chord using 3 oscillators
+    const freqs = [110, 220, 330];
+    freqs.forEach((f, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = i === 1 ? "sawtooth" : "triangle";
+      o.frequency.value = f * (1 + (Math.random() - 0.5) * 0.02);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.16 / (i + 1), now + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start(now + i * 0.01);
+      o.stop(now + 0.9);
+    });
+  } catch (e) {
+    console.warn("burst sound failed", e);
+  }
+}
+
+/* ====== ORIGINAL UI / SPINNER LOGIC (updated to call countdown ticks) ====== */
 const teams = document.querySelectorAll(".team");
 const colorPool = [
   { name: "Violet", code: "#8a2be2", teamName: "Eunarion" },
@@ -314,7 +445,10 @@ let availableColors = [...colorPool];
 let currentAnimating = false;
 
 teams.forEach(team => {
-  team.addEventListener("click", () => {
+  team.addEventListener("click", (e) => {
+    // play quick UI tick right away to give immediate feedback
+    playClickSound();
+
     if (team.classList.contains("locked") || currentAnimating) return;
     if (availableColors.length === 0) { alert("All colors assigned!"); return; }
     spinTeam(team);
@@ -329,13 +463,21 @@ function spinTeam(team) {
   let count = 3;
   countdown.textContent = count;
 
-  const logoEl = team.querySelector(".logo");
+  // play a tick immediately for the initial number (3)
+  playCountdownTick();
 
   const timer = setInterval(() => {
     count--;
+    // update visible number (2 -> 1 -> 0)
     countdown.textContent = count;
+
+    // play tick for visible counts > 0 (so you hear ticks for 3,2,1)
+    if (count > 0) playCountdownTick();
+
     if (count <= 0) clearInterval(timer);
   }, 1000);
+
+  const logoEl = team.querySelector(".logo");
 
   setTimeout(() => {
     const idx = Math.floor(Math.random() * availableColors.length);
@@ -435,7 +577,9 @@ function showSelectedScreen(selected) {
   spotlight.style.opacity = "0";
   requestAnimationFrame(()=> spotlight.style.opacity = "1");
 
-  // run confetti/particles and audio
+  // play burst sound (big, satisfying effect) and run confetti/particles and audio
+  // burst sound plays right away for best perceived timing with visual pop
+  playBurstSound();
   const { cancel } = runConfettiAndParticles(fxCanvas, selected.code);
   const audioCtl = playVictoryTone(selected.code);
 
@@ -640,32 +784,38 @@ function runConfettiAndParticles(canvas, color) {
   return { cancel };
 }
 
+/* victory tone previously created - updated slightly to reuse shared audio context */
 function playVictoryTone(hexColor) {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx();
     const now = ctx.currentTime;
     const freqs = [440, 660, 880];
-    const gain = ctx.createGain();
-    gain.gain.value = 0.0001;
-    gain.connect(ctx.destination);
-    gain.gain.linearRampToValueAtTime(0.26, now + 0.01);
+    const master = ctx.createGain();
+    master.gain.value = 0.0001;
+    master.connect(ctx.destination);
+    master.gain.linearRampToValueAtTime(0.26, now + 0.01);
 
-    const sources = freqs.map((f,i) => {
+    const nodes = freqs.map((f,i) => {
       const osc = ctx.createOscillator();
       const oGain = ctx.createGain();
       osc.type = i === 1 ? "sawtooth" : "triangle";
       osc.frequency.value = f;
       oGain.gain.value = 0.06 * (1 - i*0.02);
       osc.connect(oGain);
-      oGain.connect(gain);
+      oGain.connect(master);
       osc.start(now + i*0.02);
       osc.stop(now + 0.9 + i*0.02);
       return { osc, oGain };
     });
 
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
-    function stop() { try { ctx.close && ctx.close(); } catch(e){} }
-    setTimeout(stop, 1400);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+    function stop() {
+      try {
+        master.gain.cancelScheduledValues(ctx.currentTime);
+        master.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.02);
+      } catch (e) {}
+    }
     return { stop };
   } catch (err) {
     return null;
